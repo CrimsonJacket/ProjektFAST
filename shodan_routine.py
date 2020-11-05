@@ -6,11 +6,10 @@ import logging
 
 class ShodanRoutine:
     API_KEY_FILE_PATH = "./shodanapi.txt"
-    SHODAN_API_KEY = ""
+    SHODAN_API_KEY = "lmUQqr2cUXWDF1znkLZOTXOMWKMxuzTE"
     MINIFY = 'false'
 
     def __init__(self):
-        self.SHODAN_API_KEY = self.get_shodan_api_key()
         self.LOGGER = logging.getLogger(__name__)
         self.LOGGER.setLevel(logging.INFO)
 
