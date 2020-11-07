@@ -19,7 +19,7 @@ from core.log import setup_logger
 logger = setup_logger(__name__)
 
 
-def scan(target, paramData, encoding, headers, delay, timeout, skipDOM, skip):
+def scan(target, form, paramData, encoding, headers, delay, timeout, skipDOM, skip):
     GET, POST = (True, False)
     # If the user hasn't supplied the root url with http(s), we will handle it
     if not target.startswith('http'):
@@ -29,34 +29,22 @@ def scan(target, paramData, encoding, headers, delay, timeout, skipDOM, skip):
             target = 'https://' + target
         except:
             target = 'http://' + target
-    logger.info('Scan target: {}'.format(target))
-    response = requester("http://127.0.0.1:3000", {}, headers, GET, delay, timeout).text
-    
-    logger.info(f"{response}")
-
-    
-    if not skipDOM:
-        logger.info('   - Checking for DOM vulnerabilities')
-        highlighted = dom(response)
-        logger.info(f"Highlighted: {highlighted}")
-        if highlighted:
-            logger.good('   - Potentially vulnerable objects found')
-            logger.red_line(level='good')
-            for line in highlighted:
-                logger.no_format(line, level='good')
-            logger.red_line(level='good')
+    response = requester(target, {}, headers, GET, delay, timeout).text
             
-    url = target
+    url = target+form+"/"
     
     params = {p: "" for p in paramData}
     
     vuln_params = {}
     
     for paramName in params.keys():
+        logger.info(f"Target URL: {target+form}")
+        logger.info(f"Target Param: {paramName}")
+
         paramsCopy = copy.deepcopy(params)
 
         paramsCopy[paramName] = xsschecker
-        response = requester(url+"/", paramsCopy, headers, GET, delay, timeout)
+        response = requester(url, paramsCopy, headers, GET, delay, timeout)
         
         logger.debug(f"Response: {response.text}")
         

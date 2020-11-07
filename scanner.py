@@ -22,16 +22,19 @@ class Scanner:
         xss_r = XssRoutine()
         scan_result = xss_r.scan_page(url)
                 
+        processed_count = 0;
         for base_url, forms in scan_result.items():
             for form, param_details in forms.items():
                 if len(list(param_details.values())) < 1:
                     continue
                 self.LOGGER.info(f"[+] Vulnerability found on URL: {base_url}{form}")
+                processed_count += 1
                 for param, payload_list in param_details.items():
                     self.LOGGER.info(f"   - Vulnerable parameter: {param}")
                     self.LOGGER.info(f"      - Example Payload used: {payload_list[0]}")
 
-        self.LOGGER.info(f"[+] XSS Scanner successfully processed {len(scan_result.values().keys())} URLs")
+        self.LOGGER.info(f"[+] XSS Scanner successfully processed {processed_count} URL(s)")
+        self.LOGGER.red_line(level='good')
 
     def execute(self):
         with ThreadPoolExecutor(max_workers=10) as executor:

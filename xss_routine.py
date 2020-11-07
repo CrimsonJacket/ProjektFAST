@@ -4,6 +4,9 @@ import urllib.request
 from bs4 import BeautifulSoup
 from core.log import setup_logger
 from core.scan import scan
+from core.dom import dom
+from core.requester import requester
+
 
 ENCODING = False
 DELAY = 0
@@ -48,6 +51,8 @@ class XssRoutine:
 
         soup = BeautifulSoup(str(page_content), 'html.parser')
         
+        # TODO: Crawl for additional URLs in page.
+        
         # links = soup.find_all(href=True)
         # self.LOGGER.info(f"{links}")
         
@@ -56,6 +61,18 @@ class XssRoutine:
         # if len(links) > 0:
         #     for links in links:
         #         url_list.append(f"{url}")
+        
+        self.LOGGER.info(f"Scan Page: {url}")
+        self.LOGGER.info('   - Checking for DOM vulnerabilities')
+        response = requester(url, {}, HEADERS, True, DELAY, TIMEOUT).text
+        highlighted = dom(response)
+        
+        if highlighted:
+            self.LOGGER.good('   - Potentially vulnerable objects found')
+            self.LOGGER.red_line(level='good')
+            for line in highlighted:
+                self.LOGGER.no_format(line, level='good')
+            self.LOGGER.red_line(level='good')
             
 
         forms = soup.find_all('form')
@@ -94,7 +111,6 @@ class XssRoutine:
 
             # self.LOGGER.info(f"URL(w/ params): {url_with_params}")
             # self.LOGGER.info(f"Input: {inputs}\n")
-            url_form, vuln_params_payloads = scan(url+form, param_discovery_list, ENCODING, HEADERS, DELAY, TIMEOUT, SKIP_DOM, SKIP_OPT)
-            
+            url_form, vuln_params_payloads = scan(url, form, param_discovery_list, ENCODING, HEADERS, DELAY, TIMEOUT, SKIP_DOM, SKIP_OPT)
             ret_value[url].update({form: vuln_params_payloads})
         return ret_value
